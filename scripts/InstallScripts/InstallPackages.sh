@@ -172,19 +172,19 @@ while true; do
     echo "-----Enter new username:-----"
     read -r username
     #ensure no whitespace
-    case $username in *\ *) echo usernames may not contain whitespace;;  *) break;; esac
+    case "$username" in *\ *) echo usernames may not contain whitespace;;  *) break;; esac
 done
-until adduser $username --gecos ""
+until adduser "$username" --gecos ""
 do
     while true; do
         echo "-----Enter new username:-----"
         read -r username
         #ensure no whitespace
-        case $username in *\ *) echo usernames may not contain whitespace;;  *) break;; esac
+        case "$username" in *\ *) echo usernames may not contain whitespace;;  *) break;; esac
     done
 done
 
-usermod -a -G sudo,netdev,input,video,bluetooth $username
+usermod -a -G sudo,netdev,input,video,bluetooth "$username"
 
 dmesg -E
 

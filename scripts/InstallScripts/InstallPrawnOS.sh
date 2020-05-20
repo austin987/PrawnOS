@@ -62,9 +62,9 @@ install() {
             * ) echo "Please answer I, S, or U";;
         esac
     done
-    if [[ $TARGET == "USB" ]]
+    if [[ "$TARGET" == "USB" ]]
     then
-        if [[ $BOOT_DEVICE == "/dev/sda" ]]
+        if [[ "$BOOT_DEVICE" == "/dev/sda" ]]
         then
             TARGET=/dev/sdb
         else
@@ -78,8 +78,8 @@ install() {
     fi
 
     #cut off the "p" if we are using an sd card or internal emmc, doesn't change TARGET if we are using usb
-    TARGET_NO_P=$(echo $TARGET | cut -d 'p' -f 1)
-    if [ ! -e $TARGET_NO_P ];
+    TARGET_NO_P="$(echo "$TARGET" | cut -d 'p' -f 1)"
+    if [ ! -e "$TARGET_NO_P" ];
     then
         echo "${TARGET_NO_P} does not exist, have you plugged in your target sd card or usb device?"
         exit 1
@@ -111,16 +111,16 @@ install() {
     then
         emmc_partition
     else
-        external_partition $TARGET_NO_P
+        external_partition "$TARGET_NO_P"
     fi
 
-    KERNEL_PARTITION=${TARGET}1
-    ROOT_PARTITION=${TARGET}2
+    KERNEL_PARTITION="${TARGET}1"
+    ROOT_PARTITION="${TARGET}2"
     CRYPTO=false
 
     echo Writing kernel partition
-    dd if=/dev/zero of=$KERNEL_PARTITION bs=512 count=65536
-    dd if=${BOOT_DEVICE}1 of=$KERNEL_PARTITION conv=notrunc
+    dd if=/dev/zero of="$KERNEL_PARTITION" bs=512 count=65536
+    dd if="${BOOT_DEVICE}1" of="$KERNEL_PARTITION" conv=notrunc
 
     #Handle full disk encryption
     echo "Would you like to setup full disk encrytion using LUKs/DmCrypt?"
@@ -133,9 +133,9 @@ install() {
             # desktop cpu, manually supply -i 15000 for security at the cost of a slightly slower unlock
             dmesg -n 2
             echo "Enter the password you would like to use to unlock the encrypted root partition at boot"
-            cryptsetup -q -y -s 512 luksFormat -i 15000 $ROOT_PARTITION || exit 1
+            cryptsetup -q -y -s 512 luksFormat -i 15000 "$ROOT_PARTITION" || exit 1
             echo "Now unlock the newly created encrypted root partition so we can mount it and install the filesystem"
-            cryptsetup luksOpen $ROOT_PARTITION luksroot || exit 1
+            cryptsetup luksOpen "$ROOT_PARTITION" luksroot || exit 1
             dmesg -n 7
             ROOT_PARTITION=/dev/mapper/luksroot
             break
@@ -195,16 +195,16 @@ emmc_partition() {
     dmesg -D
     echo Writing partition map to internal emmc
     DISK_SZ="$(blockdev --getsz /dev/mmcblk2)"
-    echo Total disk size is: $DISK_SZ
-    if [ $DISK_SZ = 30785536 ]
+    echo Total disk size is: "$DISK_SZ"
+    if [ "$DISK_SZ" = 30785536 ]
     then
         echo Detected Emmc Type 1
-        sfdisk /dev/mmcblk2 < $RESOURCES/mmc.partmap
+        sfdisk /dev/mmcblk2 < "$RESOURCES/mmc.partmap"
 
-    elif [ $DISK_SZ = 30777344 ]
+    elif [ "$DISK_SZ" = 30777344 ]
     then
         echo Detected Emmc Type 2
-        sfdisk /dev/mmcblk2 < $RESOURCES/mmc_type2.partmap
+        sfdisk /dev/mmcblk2 < "$RESOURCES/mmc_type2.partmap"
     else
         echo ERROR! Not a known EMMC type, please open an issue on github or send SolidHal an email with the Total disk size reported above
         echo Try a fallback value? This will allow installation to continue, at the cost of a very small amoutnt of disk space. This may not work.
@@ -213,7 +213,7 @@ emmc_partition() {
             case $yn,$REPLY in
                 Yes,*|*,Yes )
                     echo Trying Emmc Type 2
-                    sfdisk /dev/mmcblk2 < $RESOURCES/mmc_type2.partmap
+                    sfdisk /dev/mmcblk2 < "$RESOURCES/mmc_type2.partmap"
                     break
                     ;;
                 * )
@@ -231,28 +231,28 @@ external_partition() {
     kernel_start=8192
     kernel_size=65536
     #wipe the partition map, cgpt doesn't like anything weird in the primary or backup partition maps
-    sgdisk -Z $EXTERNAL_TARGET
-    partprobe $EXTERNAL_TARGET
+    sgdisk -Z "$EXTERNAL_TARGET"
+    partprobe "$EXTERNAL_TARGET"
     #make the base gpt partition map
-    parted --script $EXTERNAL_TARGET mklabel gpt
-    cgpt create $EXTERNAL_TARGET
+    parted --script "$EXTERNAL_TARGET" mklabel gpt
+    cgpt create "$EXTERNAL_TARGET"
     #must use cgpt to make the kernel partition, as we need the -S, -T, and -P variables
-    cgpt add -i 1 -t kernel -b $kernel_start -s $kernel_size -l Kernel -S 1 -T 5 -P 10 $EXTERNAL_TARGET
+    cgpt add -i 1 -t kernel -b "$kernel_start" -s "$kernel_size" -l Kernel -S 1 -T 5 -P 10 "$EXTERNAL_TARGET"
     #Now the main filesystem
     #cgpt doesn't seem to handle this part correctly
-    sgdisk -N 2 $EXTERNAL_TARGET
+    sgdisk -N 2 "$EXTERNAL_TARGET"
     #Set the type to "data"
-    sgdisk -t 2:0700 $EXTERNAL_TARGET
+    sgdisk -t 2:0700 "$EXTERNAL_TARGET"
     #Name it "properly" - Probably not required, but looks nice
-    sgdisk -c 2:Root $EXTERNAL_TARGET
+    sgdisk -c 2:Root "$EXTERNAL_TARGET"
     #Reload the partition mapping
-    partprobe $EXTERNAL_TARGET
+    partprobe "$EXTERNAL_TARGET"
 }
 
 #simply expand to fill the current boot device
 expand() {
     # need to strip the "p" if BOOT_DEVICE is an sd card or emmc
-    BOOT_DEVICE_NO_P=$(echo $BOOT_DEVICE | cut -d 'p' -f 1)
+    BOOT_DEVICE_NO_P=$(echo "$BOOT_DEVICE" | cut -d 'p' -f 1)
     if [[ $BOOT_DEVICE == "/dev/mmcblk2" ]]
     then
         echo "Can't expand to fill internal emmc, install will have done this already"
@@ -260,17 +260,17 @@ expand() {
     fi
     #Make the boot partition fille the whole drive
     #Delete the partition
-    sgdisk -d 2 $BOOT_DEVICE_NO_P
+    sgdisk -d 2 "$BOOT_DEVICE_NO_P"
     #Make new partition map entry, with full size
-    sgdisk -N 2 $BOOT_DEVICE_NO_P
+    sgdisk -N 2 "$BOOT_DEVICE_NO_P"
     #Set the type to "data"
-    sgdisk -t 2:0700 $BOOT_DEVICE_NO_P
+    sgdisk -t 2:0700 "$BOOT_DEVICE_NO_P"
     #Name it "properly" - Probably not required, but looks nice
-    sgdisk -c 2:Root $BOOT_DEVICE_NO_P
+    sgdisk -c 2:Root "$BOOT_DEVICE_NO_P"
     #Reload the partition mapping
-    partprobe $BOOT_DEVICE_NO_P
+    partprobe "$BOOT_DEVICE_NO_P"
     #Force the filesystem to fill the new partition
-    resize2fs -f ${BOOT_DEVICE}2
+    resize2fs -f "${BOOT_DEVICE}2"
     echo "/dev/${BOOT_DEVICE}2 / ext4 defaults,noatime 0 1" > /etc/fstab
     while true; do
         read -r -p "Install a desktop environment and the supporting packages? [Y/n]" ins
@@ -288,15 +288,15 @@ expand() {
 install_packages() {
     TARGET_MOUNT=$1
     echo "Installing Packages"
-    mount -t proc proc $TARGET_MOUNT/proc/
-    mount --rbind /sys $TARGET_MOUNT/sys/
-    mount --rbind /dev $TARGET_MOUNT/dev/
-    chroot $TARGET_MOUNT/ ./InstallResources/InstallPackages.sh
-    umount $TARGET_MOUNT/proc/
+    mount -t proc proc "$TARGET_MOUNT/proc/"
+    mount --rbind /sys "$TARGET_MOUNT/sys/"
+    mount --rbind /dev "$TARGET_MOUNT/dev/"
+    chroot "$TARGET_MOUNT" ./InstallResources/InstallPackages.sh
+    umount "$TARGET_MOUNT/proc/"
     mount --make-rprivate /sys
     mount --make-rprivate /dev
-    umount -R $TARGET_MOUNT/sys/
-    umount -R $TARGET_MOUNT/dev/
+    umount -R "$TARGET_MOUNT/sys/"
+    umount -R "$TARGET_MOUNT/dev/"
 
 }
 
