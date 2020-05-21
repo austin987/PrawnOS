@@ -106,6 +106,7 @@ then
   dtrx libinput-gestures.tar.gz
   cd libinput-gestures
   make install
+  # shellcheck disable=SC2103
   cd ..
 
   #Add libinput-gestures config and autostart
