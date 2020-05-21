@@ -1,4 +1,7 @@
-#!/bin/bash -e
+#!/bin/bash
+# shellcheck disable=SC2103
+
+set -e
 
 
 # This file is part of PrawnOS (https://www.prawnos.com)
@@ -106,7 +109,6 @@ then
   dtrx libinput-gestures.tar.gz
   cd libinput-gestures
   make install
-  # shellcheck disable=SC2103
   cd ..
 
   #Add libinput-gestures config and autostart
