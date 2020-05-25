@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with PrawnOS.  If not, see <https://www.gnu.org/licenses/>.
 
+# shellcheck source=packages/dependencies
+source "$(dirname "${0}"/../../packages/dependencies)"
+
 DIR=/InstallResources
 
 cat $DIR/icons/ascii-icon.txt
@@ -34,13 +37,13 @@ done
 dpkg-reconfigure tzdata
 
 #Install shared packages
-DEBIAN_FRONTEND=noninteractive apt install -y xorg acpi-support lightdm tasksel dpkg librsvg2-common xorg xserver-xorg-input-libinput alsa-utils anacron avahi-daemon eject iw libnss-mdns xdg-utils mousepad vlc dconf-cli dconf-editor sudo dtrx emacs sysfsutils bluetooth
-DEBIAN_FRONTEND=noninteractive apt install -y network-manager-gnome network-manager-openvpn network-manager-openvpn-gnome
+DEBIAN_FRONTEND=noninteractive apt install -y "$shared_packages"
 
-DEBIAN_FRONTEND=noninteractive apt install -y firefox-esr
-
-[ "$DE" = "xfce" ] && apt install -y xfce4 dbus-user-session system-config-printer tango-icon-theme xfce4-power-manager xfce4-terminal xfce4-goodies numix-gtk-theme plank accountsservice papirus-icon-theme
-[ "$DE" = "lxqt" ] && apt install -y lxqt pavucontrol-qt
+case "$DE" in
+    "lxqt") apt install -y "$lxqt_packages";;
+    "xfce") apt install -y "$xfce_packages";;
+    *) echo "unknown desktop environment ${DE}!";;
+esac
 
 #install the keymap by patching xkb, then bindings work for any desktop environment
 cp $DIR/xkb/compat/* /usr/share/X11/xkb/compat/
