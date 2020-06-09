@@ -19,3 +19,8 @@ jobs:
         with:
           name: image
           path: "PrawnOS-Shiba-c201-git-*.img"
+      - name: publish kernel
+        uses: actions/upload-artifact@v2
+        with:
+          name: kernel
+          path: "build/linux-*/vmlinux.kpart"
