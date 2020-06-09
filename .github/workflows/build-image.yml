@@ -19,18 +19,24 @@ jobs:
         with:
           name: image
           path: "PrawnOS-Shiba-c201-git-*.img"
-      - name: find kernel
-        run: find . -iname vmlinux.kpart
-      - name: find dtb
-        run: find . -iname rk3288-veyron-speedy.dtb
-
-      #- name: publish kernel
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: kernel
-      #    path: "build/linux-*/vmlinux.kpart"
-      #- name: publish device tree binary (dtb)
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: dtb
-      #    path: "arch/arm/boot/dts/rk3288-veyron-speedy.dtb"
+      - name: publish kernel
+        uses: actions/upload-artifact@v2
+        with:
+          name: prawnos-kernel
+          path: "./build/linux-*/vmlinux.kpart"
+      # FIXME: Is this useful on its own?
+      - name: publish c201p/veyron-speedy device tree binary (dtb)
+        uses: actions/upload-artifact@v2
+        with:
+          name: c201p-veyron-speedy.dtb
+          path: "./build/linux-*/arch/arm/boot/dts/rk3288-veyron-speedy.dtb"
+      - name: bundle other dtbs
+        uses: jjkaram/archive-action@v1.0.0
+        with:
+          args: "tar -czvf dtbs-${GITHUB_SHA}.tar.gz ./build/linux-*/arch/arm/boot/dts/*dtb"
+      # FIXME: Not sure if this is useful or not (if above works)
+      - name: publish all available device tree binary (dtb)
+        uses: actions/upload-artifact@v2
+        with:
+          name: "all-dtbs"
+          path: "dtbs-${GITHUB_SHA}.tar.gz"
