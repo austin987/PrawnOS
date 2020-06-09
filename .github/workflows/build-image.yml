@@ -19,8 +19,18 @@ jobs:
         with:
           name: image
           path: "PrawnOS-Shiba-c201-git-*.img"
-      - name: publish kernel
-        uses: actions/upload-artifact@v2
-        with:
-          name: kernel
-          path: "build/linux-*/vmlinux.kpart"
+      - name: find kernel
+        run: find . -iname vmlinux.kpart
+      - name: find dtb
+        run: find . -iname rk3288-veyron-speedy.dtb
+
+      #- name: publish kernel
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: kernel
+      #    path: "build/linux-*/vmlinux.kpart"
+      #- name: publish device tree binary (dtb)
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: dtb
+      #    path: "arch/arm/boot/dts/rk3288-veyron-speedy.dtb"
