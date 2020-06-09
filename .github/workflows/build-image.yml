@@ -36,7 +36,7 @@ jobs:
         uses: jjkaram/archive-action@v1.0.0
         with:
           #args: "tar -czvf dtbs-${GITHUB_SHA}.tar.gz ./build/linux-*/arch/arm/boot/dts/*.dtb"
-          args: "ls && find . -iname \*.dtb"
+          args: "ls && find . -iname \\*.dtb"
 
       # FIXME: Not sure if this is useful or not (if above works)
       - name: publish all available device tree binary (dtb)
