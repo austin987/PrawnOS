@@ -1,4 +1,7 @@
 #!/bin/busybox sh
+# shellcheck shell=sh
+# Note: busybox sh is ash, but shellcheck doesn't support some of its features
+# See https://github.com/koalaman/shellcheck/issues/853
 
 # This is the init script built into the PrawnOS initramfs
 
@@ -21,14 +24,15 @@ echo In PrawnOS Init
 
 #add this to start shell at desired point
 rescue_shell() {
-    [ "{$1}" != "debug" ] && echo "Something went wrong. Dropping to a shell." > /dev/tty1
-    [ "{$1}" == "debug" ] && echo "Debug flag detected, entering debug shell" > /dev/tty1
+    [ "${1}" != "debug" ] && echo "Something went wrong. Dropping to a shell." > /dev/tty1
+    [ "${1}" = "debug" ] && echo "Debug flag detected, entering debug shell" > /dev/tty1
     echo "Something went wrong. Dropping to a shell." > /dev/tty1
     exec setsid /bin/sh -c 'exec /bin/sh </dev/tty1 >/dev/tty1 2>&1'
 }
 
 #used to parse the kernel cmdline
 cmdline() {
+    # shellcheck disable=SC2039
     local value
     value=" $(cat /proc/cmdline) "
     value="${value##* ${1}=}"
@@ -38,6 +42,7 @@ cmdline() {
 
 #used to get the uuid of the root partiton since findfs isn't in debian busybox-static
 rootpartuuid() {
+    # shellcheck disable=SC2039
     local value
     value=$1
     value="${value%/*}"
@@ -45,6 +50,8 @@ rootpartuuid() {
     [ "${value}" != "" ] && echo "${value}"
 }
 
+# FIXME: this appears unused?
+#
 # a clever portable shell script to detect occurances of a substring in a string
 # occur <string> <substring> (optional count)
 # if optional count is not provided:
@@ -53,10 +60,12 @@ rootpartuuid() {
 # if optional count is provided:
 # returns 1 if substring occurs in string < optional count
 # returns 0 otherwise
-occur() while case "$1" in (*"$2"*) set -- \
+occur() {
+        while case "$1" in (*"$2"*) set -- \
         "${1#*"$2"}" "$2" "${3:-0}" "$((${4:-0}+1))";;
         (*) return "$((${4:-0}<${3:-1}))";;esac
         do : "${_occur:+$((_occur=$4))}";done
+}
 
 # mount the bare necesities
 mount -n -t proc     proc      /proc
@@ -65,35 +74,36 @@ mount -n -t devtmpfs devtmpfs  /dev
 
 # get the root device, so we can find the boot partiton
 UNPARSED=$(cmdline root)
+# shellcheck disable=SC2086
 ROOT_PARTUUID=$(rootpartuuid $UNPARSED)
-echo ${ROOT_PARTUUID} > /dev/tty1
-BLKID=$(/bin/blkid | grep $ROOT_PARTUUID )
-echo ${BLKID} > /dev/tty1
+echo "${ROOT_PARTUUID}" > /dev/tty1
+BLKID="$(blkid | grep "$ROOT_PARTUUID")"
+echo "${BLKID}" > /dev/tty1
 #If its an mmcblk device, the kernel partiton will p1. If it is a usb device, the partiton will just be 1
 #Just want everything before the 1
 ROOT_DEV="${BLKID%1:*}"
 
-echo ${ROOT_DEV} > /dev/tty1
+echo "${ROOT_DEV}" > /dev/tty1
 
 # label any partition on the system with RESCUESHELL to enter the initramfs rescue shell before mount and root_switch.
 # you can do this with "cgpt add -i 1 -l RESCUESHELL /dev/sda" for example to label the first partiton of a usb drive.
-if [ -n "$(blkid | grep RESCUESHELL)" ]
+if blkid | grep -q RESCUESHELL
 then
     rescue_shell debug
 fi
 
-if [ -n "$(blkid ${ROOT_DEV}2 | grep crypto_LUKS)" ]
+if blkid "${ROOT_DEV}2" | grep -q crypto_LUKS
 then
     #decrypt and mount the root filesystem, disable kernel log messages to avoid clashing with the prompt
     dmesg -n 2
     echo "Opening encrypted root partition, this will take 30s..."
-    cryptsetup --tries 5 luksOpen ${ROOT_DEV}2 luksroot || rescue_shell
+    cryptsetup --tries 5 luksOpen "${ROOT_DEV}2" luksroot || rescue_shell
     dmesg -n 7
     mount /dev/mapper/luksroot /newroot
 else
     # mount the unencrypted root filesystem
     [ -d "/newroot" ] || mkdir -p /newroot
-    mount ${ROOT_DEV}2 /newroot
+    mount "${ROOT_DEV}2" /newroot
 fi
 
 umount /sys
