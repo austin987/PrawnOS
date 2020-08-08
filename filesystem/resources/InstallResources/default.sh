@@ -1,4 +1,6 @@
 #!/bin/sh
+# shellcheck disable=SC2048,SC2086,SC2034,SC2046
+
 # /etc/acpi/default.sh
 # Default acpi script that takes an entry for all actions
 
