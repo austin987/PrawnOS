@@ -40,8 +40,8 @@ pnum_kernel=1
 die()
 {
     redtxt='\033[0;31m'
-    printf "$redtxt$1\n"
-    exit $2
+    printf "%s" "$redtxt$1\n"
+    exit "$2"
 }
 
 # function get_partition_type_uuid()
@@ -75,16 +75,16 @@ get_root_partition()
 set -e
 
 # Check root or sudo
-[ ! $(id -u) = 0 ] &&
+[ ! "$(id -u)" = 0 ] &&
     die "Please run this script with sudo, or as root" 1
 
-rootfs=$(get_root_partition)
-devname=$(lsblk -no pkname $rootfs | head -n 1)
+rootfs="$(get_root_partition)"
+devname="$(lsblk -no pkname "$rootfs" | head -n 1)"
 devtype=
 kpart=
 
 case "$devname" in
-    $emmc_devname)
+    "$emmc_devname")
 	devtype="Internal eMMC"
 	kpart=/dev/${devname}p$pnum_kernel
 	;;
@@ -101,17 +101,13 @@ case "$devname" in
 esac
 
 # Check that the selected partition is effectively of type "kernel"
-ptype=$(get_partition_type_uuid /dev/$devname $pnum_kernel)
+ptype="$(get_partition_type_uuid "/dev/$devname" "$pnum_kernel")"
 [ ! "$ptype" = "$ptype_kernel" ] &&
     die "FATAL ERROR: unexpected partitioning scheme found. Partition # $pnum_kernel is NOT the kernel partition!" 255
 
 # Check that the needed kernel images exist
 [ ! -e "$kimg" ] &&
     die "ERROR: cannot find kernel image at $kimg !" 127
-
-[ ! -e "$blnk" ] &&
-    die "ERROR: cannot find blank image at $blnk !" 127
-
 
 # Prompt for user's confirmation
 echo "
@@ -124,7 +120,7 @@ DO NOT shutdown or reboot before completing the process!
 "
 printf "%s" "Are you REALLY sure you want to continue??? [y/N] "
 
-read ans
+read -r ans
 
 [ "$ans" != "y" ] &&
        [ "$ans" != "Y" ] &&
@@ -134,7 +130,7 @@ read ans
 #blank the kernel partition first, with 32MiB of zeros
 kernel_size=65536
 block_size=512
-dd if=/dev/zero of="$kpart" conv=notrunc bs=512 count=$kernel_size ||
+dd if=/dev/zero of="$kpart" conv=notrunc bs=$block_size count=$kernel_size ||
     die "FAILED to flash blank kernel on $kpart!" 255
 
 dd if="$kimg" of="$kpart" conv=notrunc ||
