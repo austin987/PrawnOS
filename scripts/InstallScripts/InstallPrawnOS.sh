@@ -359,6 +359,25 @@ install_packages() {
     desktop=true
 }
 
+setup_hostname() {
+    while true; do
+        read -r -p "Would you like to set a custom hostname (default: PrawnOS)? [Y/n]" response
+        case $response in
+            [Yy]*)
+                echo "-----Enter hostname:-----"
+                read -r hostname
+                # ensure no whitespace
+                case "$hostname" in *\ *) echo hostnames may not contain whitespace;;  *) break;; esac
+            done
+            [Nn]* ) hostname="PrawnOS"; break;;
+            * ) echo "Please answer y or n";;
+        esac
+
+    # Setup /etc/hostname and /etc/hosts:
+    echo -n "$hostname" > "$outmnt/etc/hostname"
+    echo -n "127.0.0.1        $hostname" > "$outmnt/etc/hosts"
+}
+
 setup_users() {
     TARGET_MOUNT="$1"
 

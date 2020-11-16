@@ -201,6 +201,7 @@ qemu-debootstrap --arch $TARGET_ARCH $DEBIAN_SUITE \
 chroot $outmnt passwd -d root
 
 #Place the config files and installer script and give them the proper permissions
+# FIXME: is this needed here? We're going to overwrite it later
 echo -n PrawnOS > $outmnt/etc/hostname
 cp -R $install_resources/ $outmnt/InstallResources/
 # and the icons for the lockscreen and app menu
@@ -301,10 +302,6 @@ apt_install $PRAWNOS_BUILD $outmnt false ${mesa_debs_download[@]}
 
 #Setup console font size
 cp -f $build_resources/console-font.sh $outmnt/etc/profile.d/console-font.sh
-
-#Cleanup hosts
-rm -rf $outmnt/etc/hosts #This is what https://wiki.debian.org/EmDebian/CrossDebootstrap suggests
-echo -n "127.0.0.1        PrawnOS" > $outmnt/etc/hosts
 
 #Cleanup apt retry
 chroot $outmnt rm -f /etc/apt/apt.conf.d/80-retries
