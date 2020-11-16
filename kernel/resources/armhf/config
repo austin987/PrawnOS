@@ -1363,11 +1363,11 @@ CONFIG_PREVENT_FIRMWARE_BUILD=y
 # Firmware loader
 #
 CONFIG_FW_LOADER=y
-CONFIG_EXTRA_FIRMWARE="htc_9271.fw htc_7010.fw"
-CONFIG_EXTRA_FIRMWARE_DIR="./open-ath9k-firmware"
+CONFIG_EXTRA_FIRMWARE="brcm/brcmfmac4354-sdio.txt brcm/brcmfmac4354-sdio.google,veyron-minnie-rev4.txt brcm/brcmfmac4354-sdio.bin"
+CONFIG_EXTRA_FIRMWARE_DIR="./"
 # CONFIG_FW_LOADER_USER_HELPER is not set
 # CONFIG_FW_LOADER_COMPRESS is not set
-# CONFIG_FW_CACHE is not set
+CONFIG_FW_CACHE=y is not set
 # end of Firmware loader
 
 CONFIG_WANT_DEV_COREDUMP=y
