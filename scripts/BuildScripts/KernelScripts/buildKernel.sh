@@ -85,6 +85,13 @@ fi
 cp $INITRAMFS .
 cp $RESOURCES/config .config
 cp $RESOURCES/kernel.its .
+
+# wifi firmware blob:
+mkdir -p brcm
+cp $RESOURCES/brcmfmac4354-sdio.bin brcm/
+cp $RESOURCES/brcmfmac4354-sdio.txt brcm/
+cp $RESOURCES/brcmfmac4354-sdio.txt 'brcm/brcmfmac4354-sdio.google,veyron-minnie-rev4.txt'
+
 make -j $(($(nproc) +1))  CROSS_COMPILE=$CROSS_COMPILER ARCH=$KERNEL_ARCH $IMAGE
 make -j $(($(nproc) +1))  CROSS_COMPILE=$CROSS_COMPILER ARCH=$KERNEL_ARCH DTC_FLAGS="-@" dtbs
 mkimage -D "-I dts -O dtb -p 2048" -f kernel.its vmlinux.uimg
