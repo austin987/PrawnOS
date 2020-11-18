@@ -77,10 +77,10 @@ done
 dpkg-reconfigure tzdata
 
 #Install shared packages
-DEBIAN_FRONTEND=noninteractive apt install -y ${base_debs_download[@]}
-DEBIAN_FRONTEND=noninteractive apt install -y ${mesa_debs_download[@]}
-DEBIAN_FRONTEND=noninteractive apt install -y ${prawnos_base_debs_prebuilt_download[@]}
-DEBIAN_FRONTEND=noninteractive apt install -y ${prawnos_base_debs_prebuilt_install[@]}
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-downgrades ${base_debs_download[@]}
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-downgrades ${mesa_debs_download[@]}
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-downgrades ${prawnos_base_debs_prebuilt_download[@]}
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-downgrades ${prawnos_base_debs_prebuilt_install[@]}
 
 
 
