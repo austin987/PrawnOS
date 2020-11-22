@@ -16,11 +16,25 @@ KERNEL_PATCHES := $(PRAWNOS_KERNEL)/patches/$(TARGET)
 
 KERNEL_BUILD_LOG := $(PRAWNOS_BUILD_LOGS)/kernel-log-$(TARGET).txt
 
+KERNEL_LINUX_LIBRE_URL := https://www.linux-libre.fsfla.org/pub/linux-libre/releases/$(KVER)-gnu/
+KERNEL_LINUX_LIBRE_BASENAME := linux-libre-$(KVER)-gnu.tar.lz
+KERNEL_LINUX_LIBRE_TAR := $(PRAWNOS_BUILD_SOURCES)/$(KERNEL_LINUX_LIBRE_BASENAME)
+KERNEL_LINUX_LIBRE_TAR_SIGNATURE := $(KERNEL_LINUX_LIBRE_TAR).sign
+KERNEL_LINUX_LIBRE_PUBKEY := $(KERNEL_SHARED_RESOURCES)/linux-libre-signing-key.gpg
+
+KERNEL_BLOBBY_LINUX_URL := https://cdn.kernel.org/pub/linux/kernel/v5.x/
+KERNEL_BLOBBY_LINUX_BASENAME := blobby-linux-$(KVER)-gnu.tar.xz
+KERNEL_BLOBBY_LINUX_TAR := $(PRAWNOS_BUILD_SOURCES)/$(KERNEL_BLOBBY_LINUX_BASENAME)
+KENREL_BLOBBY_TAR_SIGNATURE := $(KERNEL_BLOBBY_LINUX_TAR).sign
+KERNEL_BLOBBY_LINUX_PUBKEY := $(KERNEL_SHARED_RESOURCES)/linux-libre-signing-key.gpg
+
 ### UNIVERSAL VARS ###
-KERNEL_TAR := $(PRAWNOS_BUILD_SOURCES)/linux-libre-$(KVER)-gnu.tar.lz
-KERNEL_BLOBBY_TAR := $(PRAWNOS_BUILD_SOURCES)/blobby-linux-$(KVER)-gnu.tar.xz
-KERNEL_TAR_SIGNATURE := $(KERNEL_TAR).sign
-KERNEL_LINUX_LIBRE_PUB := $(KERNEL_SHARED_RESOURCES)/linux-libre-signing-key.gpg
+# Default to a libre kernel. blobby_kernel target below will override if needed:
+KERNEL_URL := $(KERNEL_LINUX_LIBRE_URL)
+KERNEL_BASENAME := $(KERNEL_LINUX_LIBRE_BASENAME)
+KERNEL_TAR := $(KERNEL_LINUX_LIBRE_TAR)
+KERNEL_TAR_SIGNATURE := $(KERNEL_LINUX_LIBRE_TAR_SIGNATURE)
+KERNEL_PUBKEY := $(KERNEL_LINUX_LIBRE_PUBKEY)
 
 ATH9K_EXTRACTED := $(PRAWNOS_ATH9K_BUILD)/.ath9k_extracted
 ATH9K_TAR := $(KERNEL_SHARED_RESOURCES)/open-ath9k-htc-firmware.tar.gz
@@ -81,7 +95,7 @@ update_ath9k_tar:
 .PHONY: blobby_kernel
 blobby_kernel:
 	rm -rf $(PRAWNOS_KERNEL_BUILD)
-	wget $(WGET_OPTS) https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-$(KVER).tar.xz -O $(KERNEL_BLOBBY_TAR)
+	wget $(WGET_OPTS) $(KERNEL_BLOBBY_LINUX_URL)/$(KERNEL_BLOBBY_LINUX_BASENAME) -O $(KERNEL_BLOBBY_TAR)
 	tar -Jxf $(KERNEL_BLOBBY_TAR) -C $(PRAWNOS_BUILD)
 	touch $(KERNEL_EXTRACTED)
 	touch $(KERNEL_PATCHED)
@@ -92,11 +106,11 @@ $(KERNEL_ATH9K_FIRMWARES):
 	mkdir -p $(KERNEL_ATH9K_FIRMWARES)
 
 $(KERNEL_TAR_SIGNATURE): | $(PRAWNOS_BUILD_SOURCES)
-	wget $(WGET_OPTS) https://www.linux-libre.fsfla.org/pub/linux-libre/releases/$(KVER)-gnu/linux-libre-$(KVER)-gnu.tar.lz.sign -O $(KERNEL_TAR_SIGNATURE)
+	wget $(WGET_OPTS) $(KERNEL_URL)/$(KERNEL_TAR_SIGNATURE) -O $(KERNEL_TAR_SIGNATURE)
 
 $(KERNEL_TAR): $(KERNEL_TAR_SIGNATURE) | $(PRAWNOS_BUILD_LOGS) $(PRAWNOS_BUILD_SOURCES)
-	wget $(WGET_OPTS) https://www.linux-libre.fsfla.org/pub/linux-libre/releases/$(KVER)-gnu/linux-libre-$(KVER)-gnu.tar.lz -O $(KERNEL_TAR)
-	gpg --import $(KERNEL_LINUX_LIBRE_PUB)
+	wget $(WGET_OPTS) $(KERNEL_URL)/$(KERNEL_BASENAME) -O $(KERNEL_TAR)
+	gpg --import $(KERNEL_PUBKEY)
 	gpg --verify $(KERNEL_TAR_SIGNATURE) $(KERNEL_TAR)
 
 $(KERNEL_EXTRACTED): $(KERNEL_TAR)
