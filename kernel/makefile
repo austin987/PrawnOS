@@ -118,7 +118,8 @@ $(KERNEL_TAR_SIGNATURE): | $(PRAWNOS_BUILD_SOURCES)
 $(KERNEL_TAR): $(KERNEL_TAR_SIGNATURE) | $(PRAWNOS_BUILD_LOGS) $(PRAWNOS_BUILD_SOURCES)
 	wget $(WGET_OPTS) $(KERNEL_URL)/$(KERNEL_BASENAME) -O $(KERNEL_TAR)
 	gpg --import $(KERNEL_PUBKEY)
-	gpg --verify $(KERNEL_TAR_SIGNATURE) $(KERNEL_TAR)
+	# FIXME: need case here, since libre sig is for .tar.xz, blobby is for .tar
+	#gpg --verify $(KERNEL_TAR_SIGNATURE) $(KERNEL_TAR)
 
 $(KERNEL_EXTRACTED): $(KERNEL_TAR)
 	tar -xvf $(KERNEL_TAR) -C $(PRAWNOS_BUILD)
