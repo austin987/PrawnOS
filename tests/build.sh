@@ -21,12 +21,11 @@ set -x
 
 GITHUB_SHA="$1"
 TEST_TARGET="$2"
-RELEASE_VERSION="$3"
+BRANCH="$3"
 BUILD_TYPE="$4"
 
-IMG="CrawfishOS-${RELEASE_VERSION}-${TEST_TARGET}"
-IMAGE="${IMG}.img"
-IMAGE_GIT="${IMG}-git-${GITHUB_SHA}.img"
+# FIXME: how will this handle tags?
+IMG="CrawfishOS-${TEST_TARGET}-git-${BRANCH}-${GITHUB_SHA}.img"
 
 cd "$(dirname "$0")/.."
 
@@ -49,12 +48,10 @@ make install_dependencies_yes TARGET=$TEST_TARGET
              ;;
         image)
              make image TARGET=$TEST_TARGET
-             # rename the image to include git sha:
-             mv $IMAGE $IMAGE_GIT
 
              # compress, otherwise downloads take forever. Use .zip to avoid github nesting a .img inside a .xz inside a .zip..
              apt install -y zip
-             zip -9 ${IMAGE_GIT}.zip $IMAGE_GIT
+             zip -9 ${IMG}.zip ${IMG}
              ;;
         kernel)
              make kernel TARGET=$TEST_TARGET
