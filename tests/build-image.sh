@@ -19,13 +19,7 @@
 set -e
 set -x
 
-GITHUB_SHA="$1"
-TEST_TARGET="$2"
-RELEASE_VERSION="$3"
-
-IMG="PrawnOS-${RELEASE_VERSION}-${TEST_TARGET}"
-IMAGE="${IMG}.img"
-IMAGE_GIT="${IMG}-git-${GITHUB_SHA}.img"
+TEST_TARGET="$1"
 
 cd "$(dirname "$0")/.."
 
@@ -43,8 +37,5 @@ make install_dependencies_yes TARGET=$TEST_TARGET
 # libkmod: ERROR ../libkmod/libkmod-module.c:1657 kmod_module_new_from_loaded: could not open /proc/modules: No such file or directory
 make image TARGET=$TEST_TARGET
 
-# rename the image to include git sha:
-mv $IMAGE $IMAGE_GIT
-
 # compress, otherwise downloads take forever
-xz -1 $IMAGE_GIT
+xz -1 *img
