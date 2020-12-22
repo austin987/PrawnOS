@@ -265,7 +265,7 @@ chroot $outmnt echo "APT::Acquire::Retries \"3\";" > /etc/apt/apt.conf.d/80-retr
 
 #Install the base packages
 chroot $outmnt apt update
-apt_install $PRAWNOS_BUILD $outmnt true ${base_debs_install[@]}
+apt_install $PRAWNOS_BUILD $outmnt true ${desktop_debs_download[@]}
 
 #add the live-boot fstab
 cp -f $build_resources/external_fstab $outmnt/etc/fstab
