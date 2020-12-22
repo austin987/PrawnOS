@@ -18,16 +18,7 @@
 # ======================================== Package Lists =========================================
 # ================================ KEEP THESE LISTS ALPHABETIZED! ================================
 
-
-debootstrap_debs_install=(
-    build-essential
-    ca-certificates
-    gnupg
-    init
-    locales
-    openssl
-)
-
+# packages shared by CLI/GUI installs:
 base_debs_install=(
     alsa-utils
     apt-utils
@@ -73,6 +64,16 @@ base_debs_install=(
     xz-utils
 )
 
+# packages installed by debootstrap within chroot during build process:
+debootstrap_debs_install=(
+    build-essential
+    ca-certificates
+    gnupg
+    init
+    locales
+    openssl
+)
+
 # packages installed for GUI installs (gnome/lxqt/xfce):
 # FIXME: blueman can be moved to xfce only once gnome-bluetooth in settings works properly
 desktop_debs_download=(
@@ -108,36 +109,7 @@ desktop_debs_download=(
     xserver-xorg-input-libinput
 )
 
-xfce_debs_download=(
-    accountsservice
-    dbus-user-session
-    dconf-cli
-    dconf-editor
-    lightdm
-    mousepad
-    network-manager-gnome
-    network-manager-openvpn
-    network-manager-openvpn-gnome
-    numix-gtk-theme
-    papirus-icon-theme
-    plank
-    system-config-printer
-    xfce4
-    xfce4-goodies
-    xfce4-power-manager
-    xfce4-terminal
-)
-
-lxqt_debs_download=(
-    lightdm
-    lxqt
-    mousepad
-    network-manager-gnome
-    network-manager-openvpn
-    network-manager-openvpn-gnome
-    pavucontrol-qt
-)
-
+# Packages installed for gnome desktop
 gnome_debs_download=(
     dbus-user-session
     dconf-cli
@@ -165,6 +137,38 @@ gnome_debs_download=(
     network-manager-openvpn-gnome
     pavucontrol-qt
     seahorse
+)
+
+# Packages installed for lxqt desktop
+lxqt_debs_download=(
+    lightdm
+    lxqt
+    mousepad
+    network-manager-gnome
+    network-manager-openvpn
+    network-manager-openvpn-gnome
+    pavucontrol-qt
+)
+
+# Packages installed for xfce desktop
+xfce_debs_download=(
+    accountsservice
+    dbus-user-session
+    dconf-cli
+    dconf-editor
+    lightdm
+    mousepad
+    network-manager-gnome
+    network-manager-openvpn
+    network-manager-openvpn-gnome
+    numix-gtk-theme
+    papirus-icon-theme
+    plank
+    system-config-printer
+    xfce4
+    xfce4-goodies
+    xfce4-power-manager
+    xfce4-terminal
 )
 
 # packages built by prawnos, to be installed when running InstallPrawnOS
