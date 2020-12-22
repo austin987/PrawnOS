@@ -100,6 +100,7 @@ desktop_debs_download=(
     librsvg2-common
     libutempter0
     libwayland-egl1-mesa
+    keepassxc
     sudo
     sysfsutils
     tasksel
