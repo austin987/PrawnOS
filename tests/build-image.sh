@@ -46,5 +46,5 @@ make image TARGET=$TEST_TARGET
 # rename the image to include git sha:
 mv $IMAGE $IMAGE_GIT
 
-# compress, otherwise downloads take forever
-xz -1 $IMAGE_GIT
+# compress, otherwise downloads take forever. Use .zip to avoid github nesting a .img inside a .xz inside a .zip..
+zip ${IMAGE_GIT}.zip $IMAGE_GIT
