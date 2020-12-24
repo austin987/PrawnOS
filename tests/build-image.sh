@@ -47,4 +47,5 @@ make image TARGET=$TEST_TARGET
 mv $IMAGE $IMAGE_GIT
 
 # compress, otherwise downloads take forever. Use .zip to avoid github nesting a .img inside a .xz inside a .zip..
+apt install -y zip
 zip ${IMAGE_GIT}.zip $IMAGE_GIT
