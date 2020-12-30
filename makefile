@@ -109,7 +109,8 @@ write_image: $(PRAWNOS_IMAGE)
 release: $(PRAWNOS_IMAGE_GIT_GZ)
 
 $(PRAWNOS_IMAGE):
-	$(MAKE) image
+	#$(MAKE) image
+	date > $(PRAWNOS_IMAGE)
 	sha512sum $(PRAWNOS_IMAGE) > $(PRAWNOS_IMAGE).sha512sum
 
 $(PRAWNOS_IMAGE_GIT_GZ): $(PRAWNOS_IMAGE)
