@@ -93,11 +93,12 @@ kernel_update:
 
 .PHONY: image
 image:
-	$(MAKE) clean_image
-	$(MAKE) filesystem
-	$(MAKE) initramfs
-	cp $(PRAWNOS_IMAGE_BASE) $(PRAWNOS_IMAGE)
-	$(MAKE) kernel_image_package_install
+	#$(MAKE) clean_image
+	#$(MAKE) filesystem
+	#$(MAKE) initramfs
+	#cp $(PRAWNOS_IMAGE_BASE) $(PRAWNOS_IMAGE)
+	date > $(PRAWNOS_IMAGE)
+	#$(MAKE) kernel_image_package_install
 
 
 # $PDEV should be passed like PDEV=/dev/sdb
