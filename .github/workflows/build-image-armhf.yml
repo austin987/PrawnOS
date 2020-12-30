@@ -15,11 +15,9 @@ jobs:
              docker run --mount type=bind,source=$PWD,target=/PrawnOS
              --privileged -v/dev:/dev debian:bullseye
              /bin/bash /PrawnOS/tests/build.sh "$GITHUB_SHA" armhf Shiba image
-      - uses: actions/upload-artifact@v2
+
+      - name: publish image
+        uses: actions/upload-artifact@v2
         with:
-          name: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.zip"
-          path: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.zip"
-      - uses: actions/upload-artifact@v2
-        with:
-          name: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.sha512sum"
-          path: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.sha512sum"
+          name: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.*"
+          path: "PrawnOS-Shiba-armhf-git-${{ github.sha }}.img.*"
