@@ -98,6 +98,7 @@ image:
 	#$(MAKE) initramfs
 	#cp $(PRAWNOS_IMAGE_BASE) $(PRAWNOS_IMAGE)
 	date > $(PRAWNOS_IMAGE)
+	sha512sum $(PRAWNOS_IMAGE) > $(PRAWNOS_IMAGE).sha512sum
 	#$(MAKE) kernel_image_package_install
 
 
