@@ -23,6 +23,7 @@ Not PRed for misc reasons:
 * Revert "bump armhf to 5.10.1, upload package": 5.10.1 breaks booting on speedy/emmc for me. Need a dedicated issue (wanted to try newer kernel first, maybe).
 * scripts/Shared/package_lists.sh: use xfce4-screensaver instead of xsecurelock on xfce: depends on other pending PRs
 * scripts/InstallScripts/InstallPackages.sh: remove dead code: depends on other pending PRs
+* try using zip rather than xz archive for images: depends on other pending PRs
 
 Supports the following Devices:
 * armhf cpu:
