@@ -55,7 +55,7 @@ make install_dependencies_yes TARGET=$TEST_TARGET
 
              # compress, otherwise downloads take forever. Use .zip to avoid github nesting a .img inside a .xz inside a .zip..
              apt install -y zip
-             zip ${IMAGE_GIT}.zip $IMAGE_GIT
+             zip -9 ${IMAGE_GIT}.zip $IMAGE_GIT
              ;;
         kernel)
              make kernel TARGET=$TEST_TARGET
