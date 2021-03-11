@@ -154,7 +154,7 @@ install() {
     #only use the emmc_partition function for "special cases", aka veyron devices
     if [[ $TARGET == "/dev/mmcblk2p" ]] && $TARGET_EMMC
     then
-        emmc_partition
+        emmc_partition /dev/mmcblk2
     else
         external_partition $TARGET_NO_P
     fi
@@ -244,39 +244,51 @@ install() {
 
 }
 
-#Setup partition map on internal emmc
+# Setup partition map on internal emmc
 emmc_partition() {
-    #disable dmesg, writing the partition map tries to write the the first gpt table, which is unmodifiable
-    dmesg -D
-    echo Writing partition map to internal emmc
-    DISK_SZ="$(blockdev --getsz /dev/mmcblk2)"
-    echo Total disk size is: $DISK_SZ
-    if [ $DISK_SZ = 30785536 ]
-    then
-        echo Detected Emmc Type 1
-        sfdisk /dev/mmcblk2 < $RESOURCES/mmc.partmap || true
+    emmc="$1"
 
-    elif [ $DISK_SZ = 30777344 ]
-    then
-        echo Detected Emmc Type 2
-        sfdisk /dev/mmcblk2 < $RESOURCES/mmc_type2.partmap || true
-    else
-        echo ERROR! Not a known EMMC type, please open an issue on github or send SolidHal an email with the Total disk size reported above
-        echo Try a fallback value? This will allow installation to continue, at the cost of a very small amount of disk space. This may not work.
-        select yn in "Yes" "No"
-        do
-            case $yn,$REPLY in
-                Yes,*|*,Yes )
-                    echo Trying Emmc Type 2
-                    sfdisk /dev/mmcblk2 < $RESOURCES/mmc_type2.partmap || true
-                    break
-                    ;;
-                * )
-                    echo "Invalid Option, please enter Yes or No, 1 or 2"
-                    ;;
-            esac
-        done
-    fi
+    # disable dmesg, writing the partition map tries to write the the first gpt table, which is unmodifiable
+    dmesg -D
+    echo "Writing partition map to internal emmc"
+
+    disksize="$(blockdev --getsz $emmc)"
+    case $disksize in
+        30785536) echo "Detected emmc type 1";;
+        30777344) echo "Detected emmc type 2";;
+        *) echo "WARNING: unknown emmc type detected. Size: $disksize";;
+    esac
+
+    lba=34
+    sectorsize=512
+
+    kernsize=65536 # 32M
+
+    p1start=20480 # FIXME: where does this value come from?
+    p1size=$kernsize
+
+    lastlba="$((disksize - lba))"
+    p2start="$((p1start + p1size))" # OS
+    p2size="$((lastlba - p2start))" # OS
+
+    parttmp="$(mktemp)"
+
+    cat > "${parttmp}" <<_EOF
+label: gpt
+label-id: EBA5A923-2F33-7C4E-AC9A-1555FD600D19
+device: $emmc
+unit: sectors
+first-lba: $lba
+last-lba: $lastlba
+sector-size: $sectorsize
+
+${emmc}p1 : start=$p1start, size=$p1size, type=FE3A2A5D-4F32-41A7-B725-ACCC3285A309, uuid=89B31CDB-1147-5241-8271-C1ADBB9BBB44, name="Kernel", attrs="GUID:49,51,52,54,56"
+${emmc}p2 : start=$p2start, size=$p2size, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, uuid=63DB8E49-63C4-984E-90A0-8AC3222C4771, name="Root"
+_EOF
+
+    sfdisk ${emmc} < "${parttmp}" || true
+    rm "${parttmp}"
+
     dmesg -E
 }
 
