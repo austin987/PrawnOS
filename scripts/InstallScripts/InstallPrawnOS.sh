@@ -259,21 +259,23 @@ emmc_partition() {
         *) echo "WARNING: unknown emmc type detected. Size: $disksize";;
     esac
 
+    kernsize=65536 # 32M
     lba=34
+    lastlba="$((disksize - lba))"
     sectorsize=512
 
-    kernsize=65536 # 32M
-
+    # kernel
     p1start=20480 # FIXME: where does this value come from?
     p1size=$kernsize
 
-    lastlba="$((disksize - lba))"
-    p2start="$((p1start + p1size))" # OS
-    p2size="$((lastlba - p2start))" # OS
+    # OS
+    p2start="$((p1start + p1size))"
+    p2size="$((lastlba - p2start))"
 
     parttmp="$(mktemp)"
 
     # Uses parted fails on speedy, sfdisk works though:
+    # FIXME: could we also skip lba below?
     cat > "${parttmp}" <<_EOF
 label: gpt
 device: $emmc
