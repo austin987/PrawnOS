@@ -273,21 +273,30 @@ emmc_partition() {
 
     parttmp="$(mktemp)"
 
+    # Uses parted fails on speedy, sfdisk works though:
     cat > "${parttmp}" <<_EOF
 label: gpt
-label-id: EBA5A923-2F33-7C4E-AC9A-1555FD600D19
 device: $emmc
 unit: sectors
 first-lba: $lba
 last-lba: $lastlba
 sector-size: $sectorsize
 
-${emmc}p1 : start=$p1start, size=$p1size, type=FE3A2A5D-4F32-41A7-B725-ACCC3285A309, uuid=89B31CDB-1147-5241-8271-C1ADBB9BBB44, name="Kernel", attrs="GUID:49,51,52,54,56"
-${emmc}p2 : start=$p2start, size=$p2size, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7, uuid=63DB8E49-63C4-984E-90A0-8AC3222C4771, name="Root"
 _EOF
 
     sfdisk ${emmc} < "${parttmp}" || true
     rm "${parttmp}"
+
+    # Now partition with cgpt:
+    cgpt create ${emmc}
+    cgpt add -i 1 -t kernel -b $p1start -s $p1size -l KernelA -S 1 -T 2 -P 10 ${emmc}
+    cgpt add -i 2 -t data   -b $p2start -s $p2size -l Root ${emmc}
+
+    # cgpt add -i 2 -t kernel -b 73728      -s 65536 -l KernelB -S 0 -T 2 -P 5 ${emmc}
+    # cgpt add -i 3 -t data   -b 139264       -s $(( $(cgpt show ${emmc} | grep 'Sec GPT table' | awk '{print $1}') - 139264)) -l Root ${emmc}
+
+    sleep 1
+    partx -a ${emmc} || true
 
     dmesg -E
 }
