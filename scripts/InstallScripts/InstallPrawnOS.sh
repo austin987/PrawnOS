@@ -155,12 +155,14 @@ install() {
     if [[ $TARGET == "/dev/mmcblk2p" ]] && $TARGET_EMMC
     then
         emmc_partition /dev/mmcblk2
+        ROOT_PARTITION=${TARGET}3
     else
         external_partition $TARGET_NO_P
+        # FIXME: doesn't support dual kernels. If you care, send a PR
+        ROOT_PARTITION=${TARGET}2
     fi
 
     KERNEL_PARTITION=${TARGET}1
-    ROOT_PARTITION=${TARGET}2
     CRYPTO=false
 
     echo Writing kernel to partition $KERNEL_PARTITION
@@ -270,12 +272,15 @@ emmc_partition() {
 
     # OS
     p2start="$((p1start + p1size))"
-    p2size="$((lastlba - p2start))"
+    p2size=$kernsize
 
-    parttmp="$(mktemp)"
+    # Root
+    p3start="$((p2start + p2size))" # OS
+    p3size="$((lastlba - p3start))" # OS
 
     # Uses parted fails on speedy, sfdisk works though:
     # FIXME: could we also skip lba below?
+    parttmp="$(mktemp)"
     cat > "${parttmp}" <<_EOF
 label: gpt
 device: $emmc
@@ -292,10 +297,8 @@ _EOF
     # Now partition with cgpt:
     cgpt create ${emmc}
     cgpt add -i 1 -t kernel -b $p1start -s $p1size -l KernelA -S 1 -T 2 -P 10 ${emmc}
-    cgpt add -i 2 -t data   -b $p2start -s $p2size -l Root ${emmc}
-
-    # cgpt add -i 2 -t kernel -b 73728      -s 65536 -l KernelB -S 0 -T 2 -P 5 ${emmc}
-    # cgpt add -i 3 -t data   -b 139264       -s $(( $(cgpt show ${emmc} | grep 'Sec GPT table' | awk '{print $1}') - 139264)) -l Root ${emmc}
+    cgpt add -i 2 -t kernel -b $p2start -s $p2size -l KernelB -S 1 -T 2 -P 5 ${emmc}
+    cgpt add -i 3 -t data   -b $p3start -s $p3size -l Root ${emmc}
 
     sleep 1
     partx -a ${emmc} || true
