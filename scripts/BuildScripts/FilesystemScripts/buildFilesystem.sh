@@ -240,7 +240,6 @@ mkdir -p $install_dir/scripts
 
 ## installation resources
 cp $build_resources/logo/icons/ascii/* $install_dir/resources/
-cp $build_resources/partmaps/* $install_dir/resources/
 cp $build_resources_apt/deb.prawnos.com.gpg.key $install_dir/resources/
 
 ## installation scripts
