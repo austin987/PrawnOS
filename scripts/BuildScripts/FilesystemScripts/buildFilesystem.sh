@@ -193,7 +193,6 @@ printf -v debootstrap_debs_install_joined '%s,' "${debootstrap_debs_install[@]}"
 debootstrap \
                  --arch $TARGET_ARCH \
                  --cache-dir=$PRAWNOS_BUILD/debootstrap-apt-cache/ \
-                 --foreign \
                  --include ${debootstrap_debs_install_joined%,} \
                  --keyring=$build_resources_apt/debian-archive-keyring.gpg \
                  $DEBIAN_SUITE \
